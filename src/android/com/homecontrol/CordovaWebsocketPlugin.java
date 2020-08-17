@@ -62,6 +62,8 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
             this.wsSend(args, callbackContext);
         } else if (action.equals("wsClose")) {
             this.wsClose(args, callbackContext);
+        } else if (action.equals("wsForceClose")) {
+            this.wsForceClose(args, callbackContext);
         }
         return true;
     }
@@ -122,18 +124,30 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
     private void wsClose(JSONArray args, CallbackContext callbackContext) {
         try {
             String webSocketId = args.getString(0);
-            int code = args.getInt(1);
-            String reason = args.getString(2);
+            int code = !args.isNull(1) ? args.getInt(1) : 1000;
+            String reason = !args.isNull(2) ? args.getString(2) : null;
 
             WebSocketAdvanced ws = this.webSockets.get(webSocketId);
-            ws.close(code, reason);
+            boolean closeResponse = ws.close(code, reason);
+            callbackContext.success(new JSONObject().accumulate("isClosing", closeResponse));
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    private void wsForceClose(JSONArray args, CallbackContext callbackContext) {
+        try {
+            String webSocketId = args.getString(0);
+
+            WebSocketAdvanced ws = this.webSockets.get(webSocketId);
+            ws.cancel();
         } catch (JSONException e) {
             Log.e(TAG, e.getMessage());
         }
     }
 
     private class WebSocketAdvanced extends WebSocketListener {
-        
+
         private WebSocket webSocket;
         private CallbackContext callbackContext;
         private CallbackContext recvCallbackContext = null;
@@ -170,7 +184,7 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
                         TrustManager[] trustManagers = new TrustManager[]{gullibleTrustManager};
                         SecureRandom secureRandom = new SecureRandom();
                         sslContext.init(keyManagers, trustManagers, secureRandom);
-                        
+
                         // Create an ssl socket factory with our all-trusting manager
                         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
@@ -212,7 +226,7 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
 
         public void setRecvListener(final CallbackContext recvCallbackContext, boolean flushRecvBuffer) {
             this.recvCallbackContext = recvCallbackContext;
-            
+
             if (!this.messageBuffer.isEmpty() && flushRecvBuffer){
                 Iterator<PluginResult> messageIterator = this.messageBuffer.iterator();
                 while(messageIterator.hasNext()){
@@ -234,7 +248,10 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
         public boolean close(int code, String reason) {
             return this.webSocket.close(code, reason);
         }
-    
+        public void cancel() {
+            this.webSocket.cancel();
+        }
+
         @Override public void onOpen(WebSocket webSocket, Response response) {
             try {
                 JSONObject successResult = new JSONObject();
@@ -247,15 +264,15 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
                 Log.e(TAG, e.getMessage());
             }
         }
-    
+
         @Override public void onMessage(WebSocket webSocket, String text) {
             try {
                 JSONObject callbackResult = new JSONObject();
-                
+
                 callbackResult.put("callbackMethod", "onMessage");
                 callbackResult.put("webSocketId", this.webSocketId);
                 callbackResult.put("message", text);
-                
+
                 PluginResult result = new PluginResult(Status.OK, callbackResult);
                 result.setKeepCallback(true);
 
@@ -268,7 +285,7 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
                 Log.e(TAG, e.getMessage());
             }
         }
-    
+
         @Override public void onMessage(WebSocket webSocket, ByteString bytes) {
             try {
                 JSONObject callbackResult = new JSONObject();
@@ -289,7 +306,7 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
                 Log.e(TAG, e.getMessage());
             }
         }
-    
+
         @Override public void onClosing(WebSocket webSocket, int code, String reason) {
             try {
                 JSONObject callbackResult = new JSONObject();
@@ -308,7 +325,7 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
                 Log.e(TAG, e.getMessage());
             }
         }
-    
+
         @Override public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             try {
                 JSONObject failResult = new JSONObject();
@@ -316,12 +333,12 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
                 failResult.put("webSocketId", this.webSocketId);
                 if (t != null) {
                     failResult.put("code", 1006); // unexpected close
-                    failResult.put("exception", t.getMessage()); 
+                    failResult.put("exception", t.getMessage());
                 } else if (response != null) {
                     failResult.put("code", response.code());
                     failResult.put("reason", response.message());
                 }
-                
+
                 if (!this.callbackContext.isFinished()) {
                     this.callbackContext.error(failResult);
                 }

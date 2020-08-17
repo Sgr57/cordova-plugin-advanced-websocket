@@ -23,8 +23,16 @@ var CordovaWebsocketPlugin = {
     wsSend: function(wsId, message) {
         exec(null, null, PLUGIN_NAME, 'wsSend', [wsId, message]);
     },
-    wsClose: function(wsId, code, reason) {
-        exec(null, null, PLUGIN_NAME, 'wsClose', [wsId, code, reason]);
+    wsClose: function(wsId, code, reason, success) {
+        var closeSuccess = function(data) {
+            if (success != undefined && typeof success === "function") {
+                success(data);
+            }
+        }
+        exec(closeSuccess, null, PLUGIN_NAME, 'wsClose', [wsId, code, reason]);
+    },
+    wsForceClose: function(wsId) {
+        exec(null, null, PLUGIN_NAME, 'wsForceClose', [wsId]);
     }
 };
 
