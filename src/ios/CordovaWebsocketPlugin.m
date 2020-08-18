@@ -41,7 +41,7 @@
 - (void)wsClose:(CDVInvokedUrlCommand*)command;
 {
     NSString* webSocketId = [command argumentAtIndex:0];
-    NSNumber* code = [command argumentAtIndex:1];
+    NSNumber* code = @1000; // [command argumentAtIndex:1];
     NSString* reason = [command argumentAtIndex:2];
     WebSocketAdvanced* ws = [webSockets valueForKey:webSocketId];
     if (ws != nil) {
