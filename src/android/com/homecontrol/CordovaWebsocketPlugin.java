@@ -62,8 +62,8 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
             this.wsSend(args, callbackContext);
         } else if (action.equals("wsClose")) {
             this.wsClose(args, callbackContext);
-        } else if (action.equals("wsForceClose")) {
-            this.wsForceClose(args, callbackContext);
+        } else if (action.equals("wsGentlyClose")) {
+            this.wsGentlyClose(args, callbackContext);
         }
         return true;
     }
@@ -121,7 +121,7 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
         }
     }
 
-    private void wsClose(JSONArray args, CallbackContext callbackContext) {
+    private void wsGentlyClose(JSONArray args, CallbackContext callbackContext) {
         try {
             String webSocketId = args.getString(0);
             int code = !args.isNull(1) ? args.getInt(1) : 1000;
@@ -135,7 +135,7 @@ public class CordovaWebsocketPlugin extends CordovaPlugin {
         }
     }
 
-    private void wsForceClose(JSONArray args, CallbackContext callbackContext) {
+    private void wsClose(JSONArray args, CallbackContext callbackContext) {
         try {
             String webSocketId = args.getString(0);
 
