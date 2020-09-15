@@ -31,6 +31,7 @@ typedef enum SRStatusCode : NSInteger {
     SRStatusCodeUnhandledType = 1003,
     // 1004 reserved.
     SRStatusNoStatusReceived = 1005,
+    SRStatusCodeAbnormal = 1006,
     // 1004-1006 reserved.
     SRStatusCodeInvalidUTF8 = 1007,
     SRStatusCodePolicyViolated = 1008,

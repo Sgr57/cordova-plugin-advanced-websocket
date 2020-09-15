@@ -653,7 +653,7 @@ static __strong NSData *CRLFCRLF;
             return;
         }
         
-        BOOL wasConnecting = self.readyState == SR_CONNECTING;
+        BOOL wasConnecting = (self.readyState == SR_CONNECTING) || (self.readyState == SR_OPEN);
         
         self.readyState = SR_CLOSING;
         

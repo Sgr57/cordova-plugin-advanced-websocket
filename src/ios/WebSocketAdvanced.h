@@ -1,4 +1,4 @@
-#import "SocketRocket.h"
+#import "SRWebSocket.h"
 
 @interface WebSocketAdvanced: NSObject <SRWebSocketDelegate>
 {
