@@ -1,5 +1,5 @@
 #import <Cordova/CDV.h>
-#import <SocketRocket/SocketRocket.h>
+#import "SocketRocket.h"
 
 
 @interface CordovaWebsocketPlugin : CDVPlugin {
